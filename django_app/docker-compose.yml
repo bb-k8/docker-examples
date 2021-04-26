@@ -1,0 +1,34 @@
+version: "3.9"
+services:
+  app-server:
+    image: django_app:1.0
+    # specify docker-compose up --build will force a rebuild
+    # if image is not found locally, docker will build automatically
+    build:
+      context: .
+      dockerfile: DockerfileProd
+    volumes:
+      - shared-socket:/tmp/sockets/
+
+  web-server:
+    image: nginx:1.19.10-alpine
+    ports:
+      - target: 80
+        published: 80
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+      - shared-socket:/tmp/sockets/
+      - ./static:/usr/share/nginx/static
+  database:
+    # have to run python manage.py migrate to run most 
+    image: postgres:13.2-alpine
+    environment: 
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: pguser
+      POSTGRES_DB: django_db
+    volumes:
+      - database-data:/var/lib/postgresql/data
+# Named Volumes are great for sharing data between containers
+volumes:
+  database-data:
+  shared-socket:

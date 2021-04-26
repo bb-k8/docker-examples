@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  app-server:
+    image: flask_app:1.0
+    # specify docker-compose up --build will force a rebuild
+    # if image is not found locally, docker will build automatically
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # uwsgi links our web and appserver using a socket
+    # in addition to that, it can open a port for health checks / etc 
+    ports:
+      - target: 9090
+        published: 9090
+    environment:
+      FLASK_DATABASE_URI: postgres://pguser:example@database/flask_db
+    volumes:
+      - flask-socket:/tmp/sockets/
+    depends_on:
+      - database
+
+  web-server:
+    image: nginx:1.19.10-alpine
+    ports:
+      - target: 80
+        published: 80
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+      - flask-socket:/tmp/sockets/
+      - ./flask_app/static:/usr/share/nginx/flask_app/static
+  database:
+    image: postgres:13.2-alpine
+    environment: 
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: pguser
+      POSTGRES_DB: flask_db
+    volumes:
+      - flask-database-data:/var/lib/postgresql/data
+# Named Volumes are great for sharing data between containers
+volumes:
+  flask-database-data:
+  flask-socket:

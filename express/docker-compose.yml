@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  app-server:
+    image: expressapp:1.0
+    # specify docker-compose up --build will force a rebuild
+    # if image is not found locally, docker will build automatically
+    build:
+      context: .
+      dockerfile: Dockerfile
+  web-server:
+    image: express-webserver:1.0
+    build:
+      context: .
+      dockerfile: Dockerfile-Webserver
+    ports:
+      - target: 80
+        published: 81

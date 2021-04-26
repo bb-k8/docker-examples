@@ -1,0 +1,4 @@
+FROM nginx:1.19.10-alpine
+# Copy over configs, static files, etc.
+# For static files, will need to chmod so that nginx can read them.
+COPY ./conf.d /etc/nginx/conf.d
